@@ -8,9 +8,10 @@ interface ModalProps {
   onClose: () => void;
   title: string;
   children: React.ReactNode;
+  size?: 'sm' | 'md' | 'lg' | 'xl';
 }
 
-export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }) => {
+export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, size = 'md' }) => {
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -37,7 +38,12 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }
         className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
         onClick={onClose}
       />
-      <div className="relative bg-white rounded-xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+      <div className={`relative bg-white rounded-xl shadow-2xl w-full max-h-[90vh] overflow-y-auto ${
+        size === 'sm' ? 'max-w-sm' :
+        size === 'md' ? 'max-w-md' :
+        size === 'lg' ? 'max-w-2xl' :
+        'max-w-4xl'
+      }`}>
         <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
           <h2 className="text-xl font-semibold text-gray-900">{title}</h2>
           <button
