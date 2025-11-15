@@ -2,6 +2,7 @@
 
 A modern, professional expense tracking web application built with Next.js 14, TypeScript, and Tailwind CSS. Track your personal finances with an intuitive interface, powerful analytics, and comprehensive filtering capabilities.
 
+Test entry - ignore
 ## Features
 
 ### Core Functionality
