@@ -1,65 +1,107 @@
-import Image from "next/image";
+'use client'
 
-export default function Home() {
+import { useState } from 'react'
+import dynamic from 'next/dynamic'
+import { useExpenses } from '@/hooks/useExpenses'
+import { getCategoryTotals, getMonthlyData } from '@/lib/utils'
+import { Expense } from '@/lib/types'
+import Navigation from '@/components/Navigation'
+import SummaryCards from '@/components/Dashboard/SummaryCards'
+import RecentExpenses from '@/components/Dashboard/RecentExpenses'
+import ExpenseForm from '@/components/Expenses/ExpenseForm'
+import { ToastContainer, useToast } from '@/components/ui/Toast'
+
+const SpendingChart = dynamic(() => import('@/components/Dashboard/SpendingChart'), { ssr: false })
+const MonthlyTrend = dynamic(() => import('@/components/Dashboard/MonthlyTrend'), { ssr: false })
+
+export default function DashboardPage() {
+  const { expenses, stats, addExpense, updateExpense, isLoaded } = useExpenses()
+  const [isFormOpen, setIsFormOpen] = useState(false)
+  const [editingExpense, setEditingExpense] = useState<Expense | null>(null)
+  const { toasts, addToast, dismissToast } = useToast()
+
+  const categoryData = getCategoryTotals(expenses)
+  const monthlyData = getMonthlyData(expenses)
+
+  function handleEdit(expense: Expense) {
+    setEditingExpense(expense)
+    setIsFormOpen(true)
+  }
+
+  function handleFormClose() {
+    setIsFormOpen(false)
+    setEditingExpense(null)
+  }
+
+  function handleSave(data: Omit<Expense, 'id' | 'createdAt'>) {
+    if (editingExpense) {
+      updateExpense(editingExpense.id, data)
+      addToast('Expense updated successfully', 'success')
+    } else {
+      addExpense(data)
+      addToast('Expense added successfully', 'success')
+    }
+  }
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+    <>
+      <Navigation onAddExpense={() => setIsFormOpen(true)} />
+
+      <main className="pt-16 min-h-screen">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="mb-8">
+            <h1 className="text-2xl font-bold text-slate-900">Dashboard</h1>
+            <p className="text-slate-500 text-sm mt-1">Your financial overview at a glance</p>
+          </div>
+
+          {!isLoaded ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="bg-white rounded-2xl border border-slate-200 p-6 h-28 animate-pulse">
+                  <div className="flex gap-4">
+                    <div className="w-12 h-12 bg-slate-100 rounded-xl" />
+                    <div className="flex-1 space-y-2 pt-1">
+                      <div className="h-3 bg-slate-100 rounded w-24" />
+                      <div className="h-6 bg-slate-100 rounded w-32" />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="mb-6">
+              <SummaryCards stats={stats} />
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            {isLoaded ? (
+              <>
+                <SpendingChart data={categoryData} />
+                <MonthlyTrend data={monthlyData} />
+              </>
+            ) : (
+              <>
+                <div className="bg-white rounded-2xl border border-slate-200 h-72 animate-pulse" />
+                <div className="bg-white rounded-2xl border border-slate-200 h-72 animate-pulse" />
+              </>
+            )}
+          </div>
+
+          {isLoaded && (
+            <RecentExpenses expenses={expenses} onEdit={handleEdit} />
+          )}
         </div>
       </main>
-    </div>
-  );
+
+      <ExpenseForm
+        isOpen={isFormOpen}
+        onClose={handleFormClose}
+        onSave={handleSave}
+        editingExpense={editingExpense}
+      />
+
+      <ToastContainer toasts={toasts} onDismiss={dismissToast} />
+    </>
+  )
 }
