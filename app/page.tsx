@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import dynamic from 'next/dynamic'
 import { useExpenses } from '@/hooks/useExpenses'
-import { getCategoryTotals, getMonthlyData } from '@/lib/utils'
+import { getCategoryTotals, getMonthlyData, exportToCSV } from '@/lib/utils'
 import { Expense } from '@/lib/types'
 import Navigation from '@/components/Navigation'
 import SummaryCards from '@/components/Dashboard/SummaryCards'
@@ -49,9 +49,17 @@ export default function DashboardPage() {
 
       <main className="pt-16 min-h-screen">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="mb-8">
-            <h1 className="text-2xl font-bold text-slate-900">Dashboard</h1>
-            <p className="text-slate-500 text-sm mt-1">Your financial overview at a glance</p>
+          <div className="mb-8 flex items-start justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-slate-900">Dashboard</h1>
+              <p className="text-slate-500 text-sm mt-1">Your financial overview at a glance</p>
+            </div>
+            <button
+              onClick={() => exportToCSV(expenses)}
+              className="px-4 py-2 bg-white border border-slate-200 text-slate-700 text-sm font-medium rounded-xl hover:bg-slate-50 transition-colors"
+            >
+              Export Data
+            </button>
           </div>
 
           {!isLoaded ? (
