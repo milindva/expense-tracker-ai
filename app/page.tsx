@@ -10,6 +10,7 @@ import SummaryCards from '@/components/Dashboard/SummaryCards'
 import RecentExpenses from '@/components/Dashboard/RecentExpenses'
 import ExpenseForm from '@/components/Expenses/ExpenseForm'
 import { ToastContainer, useToast } from '@/components/ui/Toast'
+import ExportModal from '@/components/Export/ExportModal'
 
 const SpendingChart = dynamic(() => import('@/components/Dashboard/SpendingChart'), { ssr: false })
 const MonthlyTrend = dynamic(() => import('@/components/Dashboard/MonthlyTrend'), { ssr: false })
@@ -17,6 +18,7 @@ const MonthlyTrend = dynamic(() => import('@/components/Dashboard/MonthlyTrend')
 export default function DashboardPage() {
   const { expenses, stats, addExpense, updateExpense, isLoaded } = useExpenses()
   const [isFormOpen, setIsFormOpen] = useState(false)
+  const [isExportOpen, setIsExportOpen] = useState(false)
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null)
   const { toasts, addToast, dismissToast } = useToast()
 
@@ -49,9 +51,20 @@ export default function DashboardPage() {
 
       <main className="pt-16 min-h-screen">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="mb-8">
-            <h1 className="text-2xl font-bold text-slate-900">Dashboard</h1>
-            <p className="text-slate-500 text-sm mt-1">Your financial overview at a glance</p>
+          <div className="mb-8 flex items-start justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-slate-900">Dashboard</h1>
+              <p className="text-slate-500 text-sm mt-1">Your financial overview at a glance</p>
+            </div>
+            <button
+              onClick={() => setIsExportOpen(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-xl hover:bg-indigo-700 active:scale-95 transition-all shadow-sm"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+              Export Data
+            </button>
           </div>
 
           {!isLoaded ? (
@@ -99,6 +112,12 @@ export default function DashboardPage() {
         onClose={handleFormClose}
         onSave={handleSave}
         editingExpense={editingExpense}
+      />
+
+      <ExportModal
+        isOpen={isExportOpen}
+        onClose={() => setIsExportOpen(false)}
+        expenses={expenses}
       />
 
       <ToastContainer toasts={toasts} onDismiss={dismissToast} />
