@@ -8,15 +8,17 @@ SpendWise lets you record expenses in seconds. Each expense captures a date, an 
 
 Click the **Add Expense** button in the top-right corner of the navigation bar. It is available on every page.
 
-```
-SpendWise   Dashboard   Expenses              [ + Add Expense ]
-```
+![Navigation bar with Add Expense button](screenshots/add-nav-button.png)
 
 On smaller screens the button label shortens to **Add**.
 
 ---
 
 ## Filling In the Form
+
+The form opens as a dialog over the current page.
+
+![Empty Add Expense form](screenshots/add-form-empty.png)
 
 The form has four fields:
 
@@ -56,6 +58,10 @@ Enter a short note about what the expense was for (e.g., "Lunch with the team" o
 
 - A character counter in the bottom-right corner of the field shows how many characters you have used out of the 200-character limit.
 
+Here is an example of a fully filled-in form ready to submit:
+
+![Filled Add Expense form](screenshots/add-form-filled.png)
+
 ---
 
 ## Saving the Expense
@@ -79,6 +85,8 @@ If any field is missing or incorrect, the form will not submit. Error messages a
 | Date | Left empty |
 | Amount | Left empty, contains only letters/symbols, is zero or negative, or exceeds $1,000,000 |
 | Description | Left empty, or longer than 200 characters |
+
+![Validation errors on the Add Expense form](screenshots/add-form-validation-errors.png)
 
 Fix the highlighted fields and click **Add Expense** again to retry.
 

@@ -15,6 +15,8 @@ Your financial overview at a glance
 
 A dialog will open with a configuration panel on the left and a live preview on the right.
 
+![Export modal — default state](screenshots/export-modal-default.png)
+
 ---
 
 ## Step 1 — Choose a Format
@@ -43,6 +45,8 @@ Set a **From** and/or **To** date to include only expenses within that period.
 - Leave **To** empty to include everything from the From date onwards.
 - Leave both empty to export all expenses regardless of date.
 
+![Export modal with JSON format and date range applied](screenshots/export-modal-filtered.png)
+
 ### Categories
 
 Click any category to include only expenses in that category. You can select multiple categories.
@@ -50,6 +54,8 @@ Click any category to include only expenses in that category. You can select mul
 - When no categories are selected, **all categories are included**.
 - Selected categories are highlighted in their respective colours.
 - Click **Clear** (appears when at least one category is selected) to deselect all.
+
+![Export modal with Food and Bills categories selected](screenshots/export-modal-category-filter.png)
 
 ---
 
