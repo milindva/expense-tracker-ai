@@ -136,3 +136,28 @@ test.describe('Expenses page', () => {
     expect(filteredTotal).not.toBe(fullTotal)
   })
 })
+
+test.describe('Export from Expenses page', () => {
+  test.beforeEach(async ({ page }) => {
+    await resetStorage(page)
+    await page.goto('/expenses')
+    await page.waitForSelector('text=Showing', { state: 'visible' })
+  })
+
+  test('Export button is visible in the filter bar', async ({ page }) => {
+    await expect(page.locator('button:has-text("Export")')).toBeVisible()
+  })
+
+  test('clicking Export opens the ExportModal with all records', async ({ page }) => {
+    await page.click('button:has-text("Export")')
+    await expect(page.locator('h2:has-text("Export Data")')).toBeVisible()
+    await expect(page.locator('.fixed.inset-0.z-50 span.text-3xl')).toHaveText('20')
+  })
+
+  test('ExportModal can be closed with Escape key', async ({ page }) => {
+    await page.click('button:has-text("Export")')
+    await expect(page.locator('h2:has-text("Export Data")')).toBeVisible()
+    await page.keyboard.press('Escape')
+    await expect(page.locator('h2:has-text("Export Data")')).not.toBeVisible()
+  })
+})

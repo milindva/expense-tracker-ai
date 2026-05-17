@@ -2,12 +2,12 @@
 
 import { useState } from 'react'
 import { useExpenses } from '@/hooks/useExpenses'
-import { exportToCSV } from '@/lib/utils'
 import { Expense } from '@/lib/types'
 import Navigation from '@/components/Navigation'
 import FilterBar from '@/components/Expenses/FilterBar'
 import ExpenseList from '@/components/Expenses/ExpenseList'
 import ExpenseForm from '@/components/Expenses/ExpenseForm'
+import ExportModal from '@/components/Export/ExportModal'
 import { ToastContainer, useToast } from '@/components/ui/Toast'
 
 export default function ExpensesPage() {
@@ -23,6 +23,7 @@ export default function ExpensesPage() {
   } = useExpenses()
 
   const [isFormOpen, setIsFormOpen] = useState(false)
+  const [isExportOpen, setIsExportOpen] = useState(false)
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null)
   const { toasts, addToast, dismissToast } = useToast()
 
@@ -52,8 +53,7 @@ export default function ExpensesPage() {
   }
 
   function handleExport() {
-    exportToCSV(filteredExpenses)
-    addToast(`Exported ${filteredExpenses.length} expenses to CSV`, 'success')
+    setIsExportOpen(true)
   }
 
   const totalFiltered = filteredExpenses.reduce((sum, e) => sum + e.amount, 0)
@@ -108,6 +108,12 @@ export default function ExpensesPage() {
         onClose={handleFormClose}
         onSave={handleSave}
         editingExpense={editingExpense}
+      />
+
+      <ExportModal
+        isOpen={isExportOpen}
+        onClose={() => setIsExportOpen(false)}
+        expenses={expenses}
       />
 
       <ToastContainer toasts={toasts} onDismiss={dismissToast} />
