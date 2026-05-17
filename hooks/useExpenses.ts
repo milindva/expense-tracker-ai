@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Expense, Category, ExpenseFilters } from '@/lib/types'
+import { Expense, ExpenseFilters } from '@/lib/types'
 import { loadExpenses, saveExpenses } from '@/lib/storage'
 import { generateId } from '@/lib/utils'
 
@@ -13,20 +13,12 @@ const defaultFilters: ExpenseFilters = {
 }
 
 export function useExpenses() {
-  const [expenses, setExpenses] = useState<Expense[]>([])
+  const [expenses, setExpenses] = useState<Expense[]>(() => loadExpenses())
   const [filters, setFilters] = useState<ExpenseFilters>(defaultFilters)
-  const [isLoaded, setIsLoaded] = useState(false)
 
   useEffect(() => {
-    setExpenses(loadExpenses())
-    setIsLoaded(true)
-  }, [])
-
-  useEffect(() => {
-    if (isLoaded) {
-      saveExpenses(expenses)
-    }
-  }, [expenses, isLoaded])
+    saveExpenses(expenses)
+  }, [expenses])
 
   const addExpense = useCallback((data: Omit<Expense, 'id' | 'createdAt'>) => {
     const newExpense: Expense = {
@@ -96,7 +88,7 @@ export function useExpenses() {
     addExpense,
     updateExpense,
     deleteExpense,
-    isLoaded,
+    isLoaded: true,
     stats: {
       totalAmount,
       thisMonthTotal,

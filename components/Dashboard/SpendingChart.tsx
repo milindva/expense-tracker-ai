@@ -6,7 +6,6 @@ import {
   Cell,
   Tooltip,
   ResponsiveContainer,
-  Legend,
 } from 'recharts'
 import { CategorySummary } from '@/lib/types'
 import { CATEGORY_COLORS, CATEGORY_ICONS, formatCurrency } from '@/lib/utils'
