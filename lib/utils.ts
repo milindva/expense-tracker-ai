@@ -1,4 +1,4 @@
-import { Category, CategorySummary, Expense, MonthlyData } from './types'
+import { Category, CategorySummary, ComparisonData, DailyData, Expense, Insight, MonthlyData } from './types'
 
 export const CATEGORIES: Category[] = [
   'Food', 'Transportation', 'Entertainment', 'Shopping', 'Bills', 'Other',
@@ -97,6 +97,124 @@ export function getMonthlyData(expenses: Expense[], months: number = 6): Monthly
   }
 
   return result
+}
+
+export function getDailyData(expenses: Expense[], days: number = 7): DailyData[] {
+  const result: DailyData[] = []
+  const now = new Date()
+  const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+
+  for (let i = days - 1; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i)
+    const dateStr = d.toISOString().split('T')[0]
+    const dayName = DAY_NAMES[d.getDay()]
+    const total = expenses
+      .filter((e) => e.date === dateStr)
+      .reduce((sum, e) => sum + e.amount, 0)
+    result.push({ day: dayName, date: dateStr, total })
+  }
+
+  return result
+}
+
+export function getComparisonData(expenses: Expense[]): ComparisonData[] {
+  const now = new Date()
+  const thisMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+  const lastMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+  const lastMonthKey = `${lastMonthDate.getFullYear()}-${String(lastMonthDate.getMonth() + 1).padStart(2, '0')}`
+
+  const thisMonthMap = new Map<Category, number>()
+  const lastMonthMap = new Map<Category, number>()
+
+  expenses.forEach((e) => {
+    if (e.date.startsWith(thisMonthKey)) {
+      thisMonthMap.set(e.category, (thisMonthMap.get(e.category) ?? 0) + e.amount)
+    } else if (e.date.startsWith(lastMonthKey)) {
+      lastMonthMap.set(e.category, (lastMonthMap.get(e.category) ?? 0) + e.amount)
+    }
+  })
+
+  return CATEGORIES
+    .map((category) => ({
+      category,
+      thisMonth: thisMonthMap.get(category) ?? 0,
+      lastMonth: lastMonthMap.get(category) ?? 0,
+    }))
+    .filter((d) => d.thisMonth > 0 || d.lastMonth > 0)
+}
+
+export function getTopExpenses(expenses: Expense[], count: number = 5): Expense[] {
+  return [...expenses].sort((a, b) => b.amount - a.amount).slice(0, count)
+}
+
+export function generateInsights(
+  expenses: Expense[],
+  stats: { thisWeekTotal: number; thisMonthTotal: number }
+): Insight[] {
+  const insights: Insight[] = []
+  const now = new Date()
+
+  const dayOfWeek = now.getDay()
+  const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dayOfWeek)
+  const weekStartStr = weekStart.toISOString().split('T')[0]
+  const weekExpenses = expenses.filter((e) => e.date >= weekStartStr)
+
+  if (weekExpenses.length > 0) {
+    const catMap = new Map<Category, number>()
+    weekExpenses.forEach((e) => {
+      catMap.set(e.category, (catMap.get(e.category) ?? 0) + e.amount)
+    })
+    const [topCat, topAmount] = [...catMap.entries()].sort((a, b) => b[1] - a[1])[0]
+    insights.push({
+      icon: CATEGORY_ICONS[topCat as Category],
+      text: `${topCat} was your biggest spend this week at ${formatCurrency(topAmount)}`,
+      type: 'neutral',
+    })
+  }
+
+  const prevWeekStart = new Date(weekStart)
+  prevWeekStart.setDate(weekStart.getDate() - 7)
+  const prevWeekEnd = new Date(weekStart)
+  prevWeekEnd.setDate(weekStart.getDate() - 1)
+  const prevWeekStartStr = prevWeekStart.toISOString().split('T')[0]
+  const prevWeekEndStr = prevWeekEnd.toISOString().split('T')[0]
+  const lastWeekTotal = expenses
+    .filter((e) => e.date >= prevWeekStartStr && e.date <= prevWeekEndStr)
+    .reduce((sum, e) => sum + e.amount, 0)
+
+  if (lastWeekTotal > 0 && stats.thisWeekTotal > 0) {
+    const pct = Math.round(((stats.thisWeekTotal - lastWeekTotal) / lastWeekTotal) * 100)
+    const more = pct >= 0
+    insights.push({
+      icon: more ? '📈' : '📉',
+      text: `You spent ${Math.abs(pct)}% ${more ? 'more' : 'less'} this week vs last week`,
+      type: more ? 'negative' : 'positive',
+    })
+  }
+
+  const monthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+  const monthExpenses = expenses.filter((e) => e.date.startsWith(monthKey))
+  if (monthExpenses.length > 0) {
+    const biggest = monthExpenses.reduce((max, e) => (e.amount > max.amount ? e : max))
+    insights.push({
+      icon: '💸',
+      text: `Biggest expense this month: "${biggest.description}" at ${formatCurrency(biggest.amount)}`,
+      type: 'neutral',
+    })
+  }
+
+  const dayOfMonth = now.getDate()
+  if (dayOfMonth > 0 && stats.thisMonthTotal > 0) {
+    const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate()
+    const projected = Math.round((stats.thisMonthTotal / dayOfMonth) * daysInMonth)
+    insights.push({
+      icon: '📊',
+      text: `On track to spend ~${formatCurrency(projected)} this month based on your daily average`,
+      type: 'neutral',
+    })
+  }
+
+  return insights
 }
 
 export function generateId(): string {

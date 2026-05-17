@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Expense, Category, ExpenseFilters } from '@/lib/types'
+import { Expense, ExpenseFilters } from '@/lib/types'
 import { loadExpenses, saveExpenses } from '@/lib/storage'
 import { generateId } from '@/lib/utils'
 
@@ -18,8 +18,13 @@ export function useExpenses() {
   const [isLoaded, setIsLoaded] = useState(false)
 
   useEffect(() => {
+    // localStorage is only available client-side. Initialising here (not in lazy
+    // useState) keeps the server and client initial renders in sync, preventing
+    // hydration mismatches. The linter rule is intentionally suppressed here.
+    /* eslint-disable react-hooks/set-state-in-effect */
     setExpenses(loadExpenses())
     setIsLoaded(true)
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, [])
 
   useEffect(() => {

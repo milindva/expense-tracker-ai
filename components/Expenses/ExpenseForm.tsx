@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import { Expense, Category } from '@/lib/types'
 import { CATEGORIES, CATEGORY_ICONS } from '@/lib/utils'
 import Modal from '@/components/ui/Modal'
@@ -26,8 +26,10 @@ interface ExpenseFormProps {
 }
 
 export default function ExpenseForm({ isOpen, onClose, onSave, editingExpense }: ExpenseFormProps) {
-  const today = new Date().toISOString().split('T')[0]
+  const today = useMemo(() => new Date().toISOString().split('T')[0], [])
 
+  const [prevEditingExpense, setPrevEditingExpense] = useState(editingExpense)
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen)
   const [form, setForm] = useState<FormData>({
     date: today,
     amount: '',
@@ -37,19 +39,21 @@ export default function ExpenseForm({ isOpen, onClose, onSave, editingExpense }:
   const [errors, setErrors] = useState<FormErrors>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  useEffect(() => {
-    if (editingExpense) {
-      setForm({
-        date: editingExpense.date,
-        amount: editingExpense.amount.toString(),
-        category: editingExpense.category,
-        description: editingExpense.description,
-      })
-    } else {
-      setForm({ date: today, amount: '', category: 'Food', description: '' })
-    }
+  if (prevEditingExpense !== editingExpense || prevIsOpen !== isOpen) {
+    setPrevEditingExpense(editingExpense)
+    setPrevIsOpen(isOpen)
+    setForm(
+      editingExpense
+        ? {
+            date: editingExpense.date,
+            amount: editingExpense.amount.toString(),
+            category: editingExpense.category,
+            description: editingExpense.description,
+          }
+        : { date: today, amount: '', category: 'Food', description: '' }
+    )
     setErrors({})
-  }, [editingExpense, isOpen])
+  }
 
   function validate(): boolean {
     const newErrors: FormErrors = {}

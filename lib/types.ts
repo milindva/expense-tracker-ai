@@ -27,3 +27,21 @@ export interface MonthlyData {
   month: string
   total: number
 }
+
+export interface DailyData {
+  day: string
+  date: string
+  total: number
+}
+
+export interface ComparisonData {
+  category: string
+  thisMonth: number
+  lastMonth: number
+}
+
+export interface Insight {
+  text: string
+  icon: string
+  type: 'positive' | 'negative' | 'neutral'
+}
