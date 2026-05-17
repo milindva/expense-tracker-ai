@@ -3,17 +3,21 @@
 import { useState } from 'react'
 import dynamic from 'next/dynamic'
 import { useExpenses } from '@/hooks/useExpenses'
-import { getCategoryTotals, getMonthlyData } from '@/lib/utils'
+import { getCategoryTotals, getMonthlyData, getDailyData, getComparisonData, getTopExpenses, generateInsights } from '@/lib/utils'
 import { Expense } from '@/lib/types'
 import Navigation from '@/components/Navigation'
 import SummaryCards from '@/components/Dashboard/SummaryCards'
 import RecentExpenses from '@/components/Dashboard/RecentExpenses'
+import InsightsPanel from '@/components/Dashboard/InsightsPanel'
 import ExpenseForm from '@/components/Expenses/ExpenseForm'
 import { ToastContainer, useToast } from '@/components/ui/Toast'
 import ExportModal from '@/components/Export/ExportModal'
 
 const SpendingChart = dynamic(() => import('@/components/Dashboard/SpendingChart'), { ssr: false })
 const MonthlyTrend = dynamic(() => import('@/components/Dashboard/MonthlyTrend'), { ssr: false })
+const WeeklySpending = dynamic(() => import('@/components/Dashboard/WeeklySpending'), { ssr: false })
+const CategoryComparison = dynamic(() => import('@/components/Dashboard/CategoryComparison'), { ssr: false })
+const TopExpenses = dynamic(() => import('@/components/Dashboard/TopExpenses'), { ssr: false })
 
 export default function DashboardPage() {
   const { expenses, stats, addExpense, updateExpense, isLoaded } = useExpenses()
@@ -24,6 +28,10 @@ export default function DashboardPage() {
 
   const categoryData = getCategoryTotals(expenses)
   const monthlyData = getMonthlyData(expenses)
+  const dailyData = getDailyData(expenses)
+  const comparisonData = getComparisonData(expenses)
+  const topExpenses = getTopExpenses(expenses)
+  const insights = generateInsights(expenses, stats)
 
   function handleEdit(expense: Expense) {
     setEditingExpense(expense)
@@ -87,6 +95,8 @@ export default function DashboardPage() {
             </div>
           )}
 
+          {isLoaded && <InsightsPanel insights={insights} />}
+
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
             {isLoaded ? (
               <>
@@ -101,8 +111,25 @@ export default function DashboardPage() {
             )}
           </div>
 
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            {isLoaded ? (
+              <>
+                <WeeklySpending data={dailyData} />
+                <CategoryComparison data={comparisonData} />
+              </>
+            ) : (
+              <>
+                <div className="bg-white rounded-2xl border border-slate-200 h-72 animate-pulse" />
+                <div className="bg-white rounded-2xl border border-slate-200 h-72 animate-pulse" />
+              </>
+            )}
+          </div>
+
           {isLoaded && (
-            <RecentExpenses expenses={expenses} onEdit={handleEdit} />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <TopExpenses data={topExpenses} />
+              <RecentExpenses expenses={expenses} onEdit={handleEdit} />
+            </div>
           )}
         </div>
       </main>
