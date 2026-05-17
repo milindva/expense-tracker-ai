@@ -21,7 +21,7 @@ test.describe('Dashboard', () => {
     const monthName = new Date().toLocaleDateString('en-US', { month: 'long' })
     await expect(page.getByText('Total Spending')).toBeVisible()
     await expect(page.getByText(`${monthName} Spending`)).toBeVisible()
-    await expect(page.getByText('This Week')).toBeVisible()
+    await expect(page.getByText('This Week', { exact: true })).toBeVisible()
     await expect(page.getByText('Avg. Transaction')).toBeVisible()
   })
 
@@ -47,5 +47,17 @@ test.describe('Dashboard', () => {
 
   test('Add Expense button is visible in the nav bar', async ({ page }) => {
     await expect(page.getByRole('button', { name: /Add Expense/i })).toBeVisible()
+  })
+
+  test('spending by category chart is visible', async ({ page }) => {
+    await expect(page.getByText('Spending by Category')).toBeVisible()
+    const card = page.locator('h2:has-text("Spending by Category")').locator('xpath=..')
+    await expect(card.locator('svg')).toBeVisible()
+  })
+
+  test('monthly trend chart is visible', async ({ page }) => {
+    await expect(page.getByText('Monthly Trend')).toBeVisible()
+    const card = page.locator('h2:has-text("Monthly Trend")').locator('xpath=..')
+    await expect(card.locator('svg')).toBeVisible()
   })
 })
