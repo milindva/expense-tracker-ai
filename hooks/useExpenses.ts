@@ -13,12 +13,25 @@ const defaultFilters: ExpenseFilters = {
 }
 
 export function useExpenses() {
-  const [expenses, setExpenses] = useState<Expense[]>(() => loadExpenses())
+  const [expenses, setExpenses] = useState<Expense[]>([])
   const [filters, setFilters] = useState<ExpenseFilters>(defaultFilters)
+  const [isLoaded, setIsLoaded] = useState(false)
 
   useEffect(() => {
-    saveExpenses(expenses)
-  }, [expenses])
+    // localStorage is only available client-side. Initialising here (not in lazy
+    // useState) keeps the server and client initial renders in sync, preventing
+    // hydration mismatches. The linter rule is intentionally suppressed here.
+    /* eslint-disable react-hooks/set-state-in-effect */
+    setExpenses(loadExpenses())
+    setIsLoaded(true)
+    /* eslint-enable react-hooks/set-state-in-effect */
+  }, [])
+
+  useEffect(() => {
+    if (isLoaded) {
+      saveExpenses(expenses)
+    }
+  }, [expenses, isLoaded])
 
   const addExpense = useCallback((data: Omit<Expense, 'id' | 'createdAt'>) => {
     const newExpense: Expense = {
@@ -88,7 +101,7 @@ export function useExpenses() {
     addExpense,
     updateExpense,
     deleteExpense,
-    isLoaded: true,
+    isLoaded,
     stats: {
       totalAmount,
       thisMonthTotal,
